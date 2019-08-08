@@ -56,11 +56,13 @@ class BasicBlock(Module):
 class Stem(Module):
     def __init__(self):
         self.conv1 = conv_bn_relu(ni=3, nf=64, ks=3, stride=2)
-        self.conv1 = conv_bn_relu(ni=64, nf=64, ks=3, stride=2)
+        self.conv2 = conv_bn_relu(ni=64, nf=64, ks=3, stride=2)
+        init_cnn(self)
+
     def forward(self, x):
-        return nn.Sequential(
-            self.conv1,
-            self.conv2)
+        x = self.conv1(x)
+        x = self.conv2(x)
+        return x
 
 class ResidualBlock(Module):
     """
@@ -79,16 +81,15 @@ class ResidualBlock(Module):
         self.conv3 = conv_bn(nout, nout * expansion)
 
     def forward(self, x):
+        identity = x if self.downsample is None else self.downsample(x)
         conv_out = nn.Sequential(
             self.conv1,
             self.conv2,
             self.conv3)
-        if self.downsample is not None:
-            x = self.downsample(x)
-        return nn.ReLU(x + conv_out)
+        return nn.ReLU(identity + conv_out)
 
 
-class HRModule(Module):
+class MultiResBlock(Module):
     def __init__(self, channels_in):
         pass
     def forward(self, *input):
@@ -102,6 +103,8 @@ class HRNet(Module):
         self.stage2 = stage2
         self.stage3 = stage3
         self.stage4 = stage4
+
+        init_cnn(self)
 
 
     def forward(self, x):
