@@ -138,9 +138,12 @@ class MultiResBlock(Module):
         x = [branch(xi) for (branch, xi) in zip(self.branches, x)]
         # transition unit
         output = []
+
         for idx, unit in enumerate(self.exchange_unit):
-            xi = x[idx]
+            print(f'there are {len(self.branches)} branches')
+
             for j in range(len(self.branches)):
+                xi = x[j]
                 intermediate_res = unit[j](xi)
                 if j >= idx:
                     xi = xi + intermediate_res
@@ -189,8 +192,7 @@ class MultiResBlock(Module):
                     ks = 3
                     stride = 2
                     # if j > i, then we need to downsample, which is done via a series of stride 2 3x3 convolutions
-                    downsample_convs = [conv_bn_relu(ni=inplanes, nf=planes, ks=ks, stride=stride) for _ in
-                                        range(i - j - 1)]
+                    downsample_convs = [conv_bn_relu(ni=inplanes, nf=planes, ks=ks, stride=stride) for _ in range(i - j -1)]
                     downsample_convs.append(conv_bn(ni=inplanes, nf=planes, ks=ks, stride=stride))
                     layer_stack.append(nn.Sequential(*downsample_convs))
 
